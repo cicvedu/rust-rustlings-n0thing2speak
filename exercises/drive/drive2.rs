@@ -3,7 +3,6 @@
 // Execute `rustlings hint drive1` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
 
 
 struct Foo {
@@ -15,6 +14,11 @@ fn raw_pointer_to_box(address: usize) -> Box<Foo> {
     // address is a pointer that points to heap.
     // construct Box from this address, and modify Foo's b field to 
     // the string "hello"
+    unsafe {
+        let mut ptr = Box::from_raw(address as *mut Foo);
+        ptr.b = Some("hello".to_owned());
+        Box::from_raw(Box::into_raw(ptr))
+    }
 }
 
 
@@ -27,9 +31,9 @@ mod tests {
     fn test_success() {
         let nanos = Instant::now().duration_since(Instant::now().checked_sub(std::time::Duration::new(0, 1)).unwrap()).as_nanos();
 
-        let data = Box::new(Foo{
+        let data = Box::new(Foo {
             a: nanos,
-            b: None
+            b: None,
         });
 
         let ptr_1 = &data.a as *const u128 as usize;
@@ -39,6 +43,5 @@ mod tests {
 
         assert!(ptr_1 == ptr_2);
         assert!(ret.b == Some("hello".to_owned()));
-
     }
 }
