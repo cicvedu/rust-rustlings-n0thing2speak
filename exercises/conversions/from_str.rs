@@ -31,8 +31,6 @@ enum ParsePersonError {
     ParseInt(ParseIntError),
 }
 
-// I AM NOT DONE
-
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
 // 2. Split the given string on the commas present in it
@@ -52,6 +50,37 @@ enum ParsePersonError {
 impl FromStr for Person {
     type Err = ParsePersonError;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        let v: Vec<&str> = s.split(",").collect();
+        println!("vec:{:?}", v);
+        if v.len() < 2 {
+            println!("完全没有输入");
+            if v.len()==1{
+                if v[0]==""{
+                    return Err(ParsePersonError::Empty);
+                }else if v[0].len()!=0 {
+                    return Err(ParsePersonError::BadLen);
+                }
+            }
+            return Err(ParsePersonError::Empty);
+        } else if v.len() > 2 {
+            println!("输入长度错误");
+            return Err(ParsePersonError::BadLen);
+        };
+
+        let age = v[1].parse::<usize>();
+        match age {
+            Ok(a) => {
+                println!("有age");
+                if v[0].len() == 0 {
+                    println!("没有name");
+                    return Err(ParsePersonError::NoName);
+                }
+                return Ok(Person { name: v[0].to_string(), age: a });
+            }
+            Err(e) => {
+                return Err(ParsePersonError::ParseInt(e));
+            }
+        }
     }
 }
 
@@ -68,6 +97,7 @@ mod tests {
     fn empty_input() {
         assert_eq!("".parse::<Person>(), Err(ParsePersonError::Empty));
     }
+
     #[test]
     fn good_input() {
         let p = "John,32".parse::<Person>();
@@ -76,6 +106,7 @@ mod tests {
         assert_eq!(p.name, "John");
         assert_eq!(p.age, 32);
     }
+
     #[test]
     fn missing_age() {
         assert!(matches!(
